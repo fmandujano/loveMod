@@ -130,12 +130,44 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 
 #endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
+
+
 static int holamundo(lua_State *L)
 {
 	std::cout << "hola mundo desde C\n";
-return 0;
+	return 0;
 }
 
+static int getversion(lua_State* L)
+{
+	lua_pushfstring(L, "Modlove ver. %s codename %s", love_version(), love_codename());
+	return 1;
+}
+static int sumar(lua_State* L)
+{
+	float a = lua_tonumber(L, 1);
+	float b = lua_tonumber(L, 2);
+	float num = lua_tonumber(L, 0);
+
+	std::cout << "a=" << a << "\nb=" << b << "\nnum de params=" << num << "\n";
+	lua_pushnumber(L, a + b);
+	return 1;
+}
+/*
+//definir mi paquete de funciones
+static const luaL_Reg foo[] =
+{
+	{"holamundo", holamundo},
+	{"sumar", sumar},
+	{"getversion", getversion},
+	{NULL, NULL},
+};
+
+int luaopen_foo(lua_State* L) {
+	luaL_newlib(L, foo);
+	return 1;
+}
+*/
 static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 {
 	lua_getglobal(L, "package");
@@ -172,6 +204,10 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 
 	lua_pushcfunction(L, holamundo);
 	lua_setglobal(L, "holamundo");
+	//lua_pushcfunction(L, getversion);
+	//lua_setglobal(L, "getVersion");
+	//lua_pushcfunction(L, sumar);
+	//lua_setglobal(L, "sumar");
 
 	// LuaJIT-specific setup needs to be done as early as possible - before
 	// get_app_arguments because that loads external library code. This is also

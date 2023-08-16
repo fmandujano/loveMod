@@ -22,6 +22,7 @@
 #include "common/runtime.h"
 #include "modules/love/love.h"
 #include <SDL.h>
+#include <iostream> 
 
 #ifdef LOVE_BUILD_EXE
 
@@ -129,6 +130,12 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 
 #endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
+static int holamundo(lua_State *L)
+{
+	std::cout << "hola mundo desde C\n";
+return 0;
+}
+
 static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 {
 	lua_getglobal(L, "package");
@@ -162,6 +169,9 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 	// Create the virtual machine.
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
+
+	lua_pushcfunction(L, holamundo);
+	lua_setglobal(L, "holamundo");
 
 	// LuaJIT-specific setup needs to be done as early as possible - before
 	// get_app_arguments because that loads external library code. This is also
@@ -269,6 +279,8 @@ int main(int argc, char **argv)
 			   "LOVE library is version %s\n", LOVE_VERSION_STRING, love_version());
 		return 1;
 	}
+
+	std::cout << "running modlove version " << love_version() <<"\n";
 
 	int retval = 0;
 	DoneAction done = DONE_QUIT;

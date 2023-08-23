@@ -57,6 +57,7 @@ public:
 		M_TOUCH,
 		M_VIDEO,
 		M_WINDOW,
+		M_TEST,
 		M_MAX_ENUM
 	};
 

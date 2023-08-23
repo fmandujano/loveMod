@@ -130,8 +130,6 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 
 #endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
-
-
 static int holamundo(lua_State *L)
 {
 	std::cout << "hola mundo desde C\n";
@@ -153,7 +151,7 @@ static int sumar(lua_State* L)
 	lua_pushnumber(L, a + b);
 	return 1;
 }
-/*
+
 //definir mi paquete de funciones
 static const luaL_Reg foo[] =
 {
@@ -163,11 +161,13 @@ static const luaL_Reg foo[] =
 	{NULL, NULL},
 };
 
-int luaopen_foo(lua_State* L) {
-	luaL_newlib(L, foo);
-	return 1;
+extern "C" {
+	int luaopen_foo(lua_State* L) {
+		luaL_newlib(L, foo);
+		return 1;
+	}
 }
-*/
+
 static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 {
 	lua_getglobal(L, "package");
@@ -184,13 +184,13 @@ enum DoneAction
 	DONE_RESTART,
 };
 
-static DoneAction runlove(int argc, char **argv, int &retval)
+static DoneAction runlove(int argc, char** argv, int& retval)
 {
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1], "--version") == 0)
 	{
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
-		const char *err = nullptr;
+		const char* err = nullptr;
 		love_openConsole(err);
 #endif
 		printf("LOVE %s (%s)\n", love_version(), love_codename());
@@ -199,16 +199,17 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 	}
 
 	// Create the virtual machine.
-	lua_State *L = luaL_newstate();
+	lua_State* L = luaL_newstate();
 	luaL_openlibs(L);
 
+	
 	lua_pushcfunction(L, holamundo);
 	lua_setglobal(L, "holamundo");
 	//lua_pushcfunction(L, getversion);
 	//lua_setglobal(L, "getVersion");
 	//lua_pushcfunction(L, sumar);
 	//lua_setglobal(L, "sumar");
-
+	
 	// LuaJIT-specific setup needs to be done as early as possible - before
 	// get_app_arguments because that loads external library code. This is also
 	// loaded inside require("love"). Note that it doesn't use the love table.
@@ -315,6 +316,8 @@ int main(int argc, char **argv)
 			   "LOVE library is version %s\n", LOVE_VERSION_STRING, love_version());
 		return 1;
 	}
+
+	//func1(12, 24);
 
 	std::cout << "running modlove version " << love_version() <<"\n";
 

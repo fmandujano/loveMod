@@ -81,8 +81,11 @@ extern "C"
 #	include "audio/Audio.h"
 #endif
 
-// Scripts.
 #include "scripts/nogame.lua.h"
+
+#ifdef LOVE_ENABLE_TEST
+#include "test/test.h"
+#endif
 
 // Put the Lua code directly into a raw string literal.
 static const char arg_lua[] =
@@ -163,6 +166,11 @@ extern "C"
 #if defined(LOVE_ENABLE_WINDOW)
 	extern int luaopen_love_window(lua_State*);
 #endif
+
+#if defined(LOVE_ENABLE_TEST)
+	extern int luaopen_love_test(lua_State*);
+#endif
+
 	extern int luaopen_love_nogame(lua_State*);
 	extern int luaopen_love_jitsetup(lua_State*);
 	extern int luaopen_love_arg(lua_State*);
@@ -228,6 +236,10 @@ static const luaL_Reg modules[] = {
 #if defined(LOVE_ENABLE_WINDOW)
 	{ "love.window", luaopen_love_window },
 #endif
+#if defined(LOVE_ENABLE_TEST)
+	{ "love.test", luaopen_love_test},
+#endif
+
 	{ "love.nogame", luaopen_love_nogame },
 	{ "love.jitsetup", luaopen_love_jitsetup },
 	{ "love.arg", luaopen_love_arg },

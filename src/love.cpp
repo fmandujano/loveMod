@@ -158,13 +158,6 @@ static int sumar(lua_State* L)
 	return 1;
 }
 
-
-static int holamundo( lua_State *L  )
-{
-	std::cout << "hola mundo desde C \n";
-	return 0;
-}
-
 static int getVersion(lua_State* l)
 {
 	//para jalar los parametros

@@ -22,7 +22,13 @@
 #include "common/runtime.h"
 #include "modules/love/love.h"
 #include <SDL.h>
-#include <iostream> 
+
+#include <iostream>
+#include "openssl/md5.h"
+#include <sstream>
+#include <iomanip>
+
+#include <curl/curl.h>
 
 #ifdef LOVE_BUILD_EXE
 
@@ -152,20 +158,45 @@ static int sumar(lua_State* L)
 	return 1;
 }
 
-//definir mi paquete de funciones
-static const luaL_Reg foo[] =
-{
-	{"holamundo", holamundo},
-	{"sumar", sumar},
-	{"getversion", getversion},
-	{NULL, NULL},
-};
 
-extern "C" {
-	int luaopen_foo(lua_State* L) {
-		luaL_newlib(L, foo);
-		return 1;
+static int holamundo( lua_State *L  )
+{
+	std::cout << "hola mundo desde C \n";
+	return 0;
+}
+
+static int getVersion(lua_State* l)
+{
+	//para jalar los parametros
+	// int x =  lua_pop
+
+
+	lua_pushstring(l, "11.5 LoveModX");
+	//lua_pushstring(l, "ver 0000" );
+
+	return 1;
+}
+
+int calcMD5(lua_State* L)
+{
+	unsigned char hash[MD5_DIGEST_LENGTH];
+
+	//obtener el parametro enviado desde lua
+	const char* param = lua_tostring(L, 1);
+
+	MD5_CTX md5;
+	MD5_Init(&md5);
+	MD5_Update(&md5, param, strlen(param));
+	MD5_Final(hash, &md5);
+
+	std::stringstream ss;
+
+	for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
+		ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
 	}
+	lua_pushstring(L, ss.str().c_str());
+
+	return 1;
 }
 
 static int love_preload(lua_State *L, lua_CFunction f, const char *name)
@@ -198,18 +229,44 @@ static DoneAction runlove(int argc, char** argv, int& retval)
 		return DONE_QUIT;
 	}
 
+	//prueba de libcurl para bajar un dato
+	CURL* curl;
+	CURLcode res;
+	//incicializar curl
+	curl = curl_easy_init();
+	if (curl)
+	{
+
+		curl_easy_setopt(curl, CURLOPT_URL, "http://google.com/");
+
+		//hacer peticion web y esperar;
+		res = curl_easy_perform(curl);
+
+		/* Check for errors */
+		if (res == CURLE_OK)
+		{
+			std::cout << "la ip es "  << "(res=" << res << ")\n";
+		}
+
+		/* always cleanup */
+		curl_easy_cleanup(curl);
+	}
+
+
+
 	// Create the virtual machine.
 	lua_State* L = luaL_newstate();
 	luaL_openlibs(L);
 
-	
+
+	//exponer funcion a lua
 	lua_pushcfunction(L, holamundo);
 	lua_setglobal(L, "holamundo");
-	//lua_pushcfunction(L, getversion);
-	//lua_setglobal(L, "getVersion");
-	//lua_pushcfunction(L, sumar);
-	//lua_setglobal(L, "sumar");
-	
+	lua_pushcfunction(L, getVersion);
+	lua_setglobal(L, "getVersion");
+	lua_pushcfunction(L, calcMD5);
+	lua_setglobal(L, "md5");
+
 	// LuaJIT-specific setup needs to be done as early as possible - before
 	// get_app_arguments because that loads external library code. This is also
 	// loaded inside require("love"). Note that it doesn't use the love table.
@@ -307,6 +364,8 @@ static DoneAction runlove(int argc, char** argv, int& retval)
 
 	return done;
 }
+
+
 
 int main(int argc, char **argv)
 {
